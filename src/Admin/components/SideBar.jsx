@@ -7,6 +7,8 @@ import UseAuth from "../../context/UseAuth";
 // Icons
 import { LuPill } from "react-icons/lu";
 import { BiHomeAlt } from "react-icons/bi";
+import { LuUser } from "react-icons/lu";
+import { LuPackage } from "react-icons/lu";
 
 const SideBar = () => {
   const navigate = useNavigate();
@@ -48,29 +50,30 @@ const SideBar = () => {
           <BiHomeAlt />
           Dashboard
         </NavLink>
-
         <NavLink
-          to="/inicio/nuevo-pedido"
+          to="/inicio/paciente"
+          end
           className={({ isActive }) =>
             `px-4 py-2 rounded-md transition-colors flex items-center gap-3 ${
               isActive ? "bg-blue-500 text-white" : "hover:bg-gray-100"
             }`
           }
         >
-          <LuPill />
-          Nuevo Pedido
+          <LuUser />
+          Pacientes
         </NavLink>
 
         <NavLink
-          to="/inicio/historial"
+          to="/inicio/pedidos"
+          end
           className={({ isActive }) =>
             `px-4 py-2 rounded-md transition-colors flex items-center gap-3 ${
               isActive ? "bg-blue-500 text-white" : "hover:bg-gray-100"
             }`
           }
         >
-          <BiHomeAlt />
-          Historial
+          <LuPackage />
+          Pedidos
         </NavLink>
       </nav>
 
