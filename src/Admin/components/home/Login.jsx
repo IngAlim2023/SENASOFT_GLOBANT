@@ -7,7 +7,7 @@ import { useState } from "react";
 
 const Login = ({ login, setLogin }) => {
   const { register, handleSubmit } = useForm();
-  const { setIsAuth, isAuth, setUserId } = useAuth();
+  const { setIsAuth, isAuth, setUserId, setRol } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -26,10 +26,10 @@ const Login = ({ login, setLogin }) => {
     }
 
     toast.success("Bienvenido");
-    navigate("/dashboard");
+    navigate("/inicio/dashboard");
   };
   if(isAuth){
-    return <Navigate to="/dashboard" replace/>
+    return <Navigate to="/inicio" replace/>
   }
 
   return (

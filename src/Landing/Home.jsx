@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Register from "../components/home/Register";
-import Login from "../components/home/Login";
+import Register from "../Landing/components/home/Register";
+import Login from "../Landing/components/home/Login";
 import { LuPill } from "react-icons/lu";
 
 const Home = () => {
