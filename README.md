@@ -39,7 +39,7 @@ n8n para la automatización de flujos (creación de pedidos, notificaciones, y c
 
 Infraestructura:
 
-Proyecto alojado en la nube (Supabase Hosting y despliegue de interfaz en Vercel).
+Proyecto alojado en la nube (Supabase Hosting y despliegue de interfaz en Render).
 
 Control de versiones con GitHub (repositorio público para trazabilidad).
 
@@ -55,7 +55,7 @@ Accede a datos del paciente desde Supabase mediante un recurso MCP.
 
 Ejecuta prompts calibrados en un cliente MCP local.
 
-Sugiere acciones automáticas al administrador (por ejemplo, confirmar pedidos o recomendar ajustes de stock).
+Da informacion acertada sobre los medicamentos de cada paciente.
 
 🧩 Configuración:
 
