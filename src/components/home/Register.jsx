@@ -5,15 +5,31 @@ import toast from "react-hot-toast";
 const Register = ({ login, setLogin }) => {
   const { register, handleSubmit } = useForm();
 
-  const onSubmit = async (data) => {
-    const { error } = await supabase.auth.signUp(data);
+  const onSubmit = async (datas) => {
+    const { error, data } = await supabase.auth.signUp(datas);
 
     if (error) {
       return toast.error("Vuelve a intentarlo");
     }
+    if (data) {
+      const dataUser = {
+        nombre: datas.nombre,
+        documento: datas.documento,
+        fecha_nacimiento: datas.fecha_nacimiento,
+        direccion: datas.direccion,
+        telefono: datas.telefono,
+        auth_id: data.user.id,
+      };
+
+      const { error: usuarioError, data: usuarioData } = await supabase
+        .from("usuario")
+        .insert(dataUser);
+
+      console.log(usuarioError);
+    }
+    console.log(data);
     toast.success("Revisa tu correo");
   };
-
   return (
     <div className="max-w-md w-full mx-auto bg-white p-6 rounded-xl shadow-md flex flex-col justify-center">
       <div className="text-2xl font-bold text-center mb-1">Iniciar Sesión</div>
@@ -44,6 +60,36 @@ const Register = ({ login, setLogin }) => {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <input
+          type="text"
+          placeholder="Nombre completo"
+          {...register("nombre", { required: true })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+
+        <input
+          type="number"
+          placeholder="Documento"
+          {...register("documento", { required: true })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          type="date"
+          {...register("fecha_nacimiento", { required: true })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          type="text"
+          placeholder="Direccion"
+          {...register("direccion", { required: true })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          type="number"
+          placeholder="Telefono"
+          {...register("telefono", { required: true })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
         <input
           type="email"
           placeholder="Correo electrónico"
