@@ -16,7 +16,7 @@ const Home = () => {
           </div>
 
           <h1 className="text-2xl font-semibold text-gray-800">
-            Distribución Farmacéutica
+            FarmaIA
           </h1>
           <h2 className="text-lg text-gray-600">
             Acceso Equitativo a Medicamentos

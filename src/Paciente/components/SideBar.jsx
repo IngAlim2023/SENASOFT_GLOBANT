@@ -6,6 +6,7 @@ import UseAuth from "../../context/UseAuth";
 import { LuPill } from "react-icons/lu";
 import { BiHomeAlt } from "react-icons/bi";
 import { useRef, useEffect } from "react";
+import { FaHistory } from "react-icons/fa";
 
 const SideBar = ({ isExpanded, setIsExpanded }) => {
   const navigate = useNavigate();
@@ -23,7 +24,6 @@ const SideBar = ({ isExpanded, setIsExpanded }) => {
     navigate("/home");
   };
 
-  // 🔹 Mantener expandido si el mouse sigue encima, incluso al cambiar de ruta
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!sidebarRef.current) return;
@@ -62,9 +62,9 @@ const SideBar = ({ isExpanded, setIsExpanded }) => {
 
       {/* Navegación */}
       <nav className="flex flex-col gap-2 mb-6">
+        {/* Boton de Mis pedidos y es sale por default */}
         <NavLink
           to="/inicio/mis-pedidos"
-          end
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 rounded-md ${
               isActive ? "bg-blue-500 text-white" : "hover:bg-gray-100"
@@ -80,7 +80,7 @@ const SideBar = ({ isExpanded, setIsExpanded }) => {
           className={({ isActive }) =>
             `flex items-center gap-3 px-4 py-3 rounded-md ${
               isActive ? "bg-blue-500 text-white" : "hover:bg-gray-100"
-            }`
+            }`  
           }
         >
           <LuPill className="text-2xl flex-shrink-0 w-6 h-6" />
@@ -95,7 +95,7 @@ const SideBar = ({ isExpanded, setIsExpanded }) => {
             }`
           }
         >
-          <BiHomeAlt className="text-2xl flex-shrink-0 w-6 h-6" />
+          <FaHistory className="text-2xl flex-shrink-0 w-6 h-6" />
           {isExpanded && <span>Historial</span>}
         </NavLink>
       </nav>
