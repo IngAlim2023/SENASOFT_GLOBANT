@@ -12,7 +12,7 @@ export default function ChatN8n() {
 
     chatInstance.current = createChat({
       webhookUrl:
-        "https://jorgeporras94n8n.app.n8n.cloud/webhook/f0e42214-f29d-4ea7-bdc6-5658fe511fcc/chat",
+        "https://jorgeporras94n8n.app.n8n.cloud/webhook/b75b2e60-0a13-40c9-b33e-289b8ed435af/chat",
       target: chatContainer.current,
       mode: "manual",
       showTriggerButton: false,
