@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import SideBar from "../components/SideBar";
 import supabase from "../../api/supabase";
 import {
   FaMapMarkerAlt,
@@ -8,11 +7,10 @@ import {
   FaTimesCircle,
   FaClock,
   FaRoute,
-} from "react-icons/fa";
+} from "react-icons/fa";  
 import UseAuth from "../../context/UseAuth";
 
 const Historial = () => {
-  const [isExpanded, setIsExpanded] = useState(true);
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -122,19 +120,10 @@ const Historial = () => {
   // 🧱 Renderizado principal
   return (
     <div className="flex">
-      <SideBar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
-      <div
-        className={`bg-gray-50 min-h-screen ${
-          isExpanded ? "ml-64" : "ml-22"
-        } flex-1 p-6 transition-all`}
-      >
-        <div className="border-b border-gray-300 flex items-center justify-between bg-white p-6 rounded-2xl shadow-sm mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-            <FaCalendarAlt className="text-blue-500" /> Mis Pedidos
-          </h1>
-          <p className="text-sm text-gray-500">
-            Historial de pedidos asociados a tu cuenta
-          </p>
+      <div className="bg-gray-50 min-h-screen flex-1">
+        {/* Encabezado */}
+        <div className="border-b border-gray-300 flex items-center justify-between p-6 bg-white shadow-sm">
+          <h1 className="text-2xl font-semibold text-gray-800">Nuevo pedido</h1>
         </div>
 
         {loading && (

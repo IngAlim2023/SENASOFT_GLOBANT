@@ -16,18 +16,29 @@ export default function ChatN8n() {
       target: chatContainer.current,
       mode: "manual",
       showTriggerButton: false,
+      language: "es",
       initialMessages: [
         "¡Hola! 👋",
         "Mi nombre es FarmaIA. ¿En qué puedo ayudarte hoy?",
       ],
       i18n: {
         es: {
-          title: '¡Hola! 👋',
-          subtitle: 'Inicia un chat. Estamos aquí para ay udarte 24/7.',
-          footer: '',
-          getStarted: 'Nueva conversación',
-          Placeholder: 'Escribe tu pregunta...',
+          title: "¡Hola! 👋",
+          subtitle: "Estamos aquí para ayudarte las 24 horas, todos los días.",
+          getStarted: "Nueva conversación",
+          placeholder: "Escribe tu pregunta...",
+          inputPlaceholder: "Escribe tu pregunta...",
+          sendButtonLabel: "Enviar",
         },
+      },
+      theme: {
+        colorScheme: "light",
+        primaryColor: "#2563eb", // Azul principal
+        headerBackgroundColor: "#2563eb",
+        headerTextColor: "#ffffff",
+        userMessageColor: "#dbeafe", // Fondo del usuario (azul claro)
+        userMessageTextColor: "#1e3a8a", // Texto del usuario
+        botMessageColor: "#f1f5f9", // Fondo del bot (gris azulado)
       },
       enableStreaming: false,
     });
@@ -36,7 +47,13 @@ export default function ChatN8n() {
   return (
     <div
       ref={chatContainer}
-      style={{ position: "fixed", bottom: 20, right: 20, width: 300, height: 400 }}
+      style={{
+        position: "fixed",
+        bottom: 20,
+        right: 20,
+        width: 320,
+        height: 420,
+      }}
     />
   );
 }
