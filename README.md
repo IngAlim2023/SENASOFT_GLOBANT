@@ -9,7 +9,7 @@ El sistema permite:
 
 - Solicitar medicamentos a domicilio.
 - Consultar el estado y progreso de sus pedidos en tiempo real.
-- Acceder a su historial de órdenes y tratamientos.
+- Acceder a su historial de órdenes.
 
 🧑‍💼 <b>Administradores</b>:
 
@@ -55,7 +55,6 @@ Este agente se comunica con Supabase y otros servicios para <b>automatizar proce
 ### 🧠 Funcionalidades del MCP
 
 - Procesamiento de solicitudes provenientes de n8n.
-- Priorización inteligente de pedidos.
 - Acceso a datos de pacientes y medicamentos desde Supabase.
 - Ejecución de prompts personalizados mediante un cliente MCP local.
 
@@ -91,7 +90,7 @@ src/
 ### 🧰 Requisitos previos
 
 - Node.js `>= 18`
-- Docker (opcional, recomendado para entorno de desarrollo)
+- Docker 
 - Cuenta en <b>Supabase</b>
 - Variables de entorno configuradas (`.env`)
 
