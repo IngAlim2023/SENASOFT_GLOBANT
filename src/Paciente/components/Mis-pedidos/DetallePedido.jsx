@@ -5,7 +5,6 @@ import { CheckCircle, MapPin, Truck, ClipboardList, Package, Phone } from "lucid
 const DetallePedido = () => {
   const navigate = useNavigate();
 
-  // Ejemplo temporal de pedido — en la práctica se obtendría desde Supabase o un contexto
   const pedido = {
     id: "001",
     fechaSolicitud: "20 de octubre de 2025",
@@ -31,9 +30,7 @@ const DetallePedido = () => {
 
   return (
     <div className="flex">
-      <SideBar />
-
-      <div className="ml-64 flex-1 bg-gray-50 min-h-screen">
+      <div className="flex-1 bg-gray-50 min-h-screen">
         {/* Encabezado */}
         <div className="border-b border-gray-300 flex items-center justify-between p-6 bg-white shadow-sm">
           <h1 className="text-2xl font-semibold text-gray-800">
@@ -44,13 +41,16 @@ const DetallePedido = () => {
           </p>
         </div>
 
+        {/* Contenido del Detalle del Pedido */}
+
+        <div className="p-6">
         {/* Estado principal */}
-        <div className="bg-blue-100 text-blue-800 font-semibold rounded-xl px-4 py-3 inline-block mb-8 mt-6 mx-6">
+        <div className="bg-blue-100 text-blue-800 font-semibold rounded-xl px-4 py-3 inline-block mb-6">
           {pedido.estadoGeneral}
         </div>
 
         {/* Sección de información */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="bg-white shadow-sm rounded-xl p-5">
             <h2 className="text-lg font-semibold text-gray-700 mb-2 flex items-center gap-2">
               <MapPin size={20} /> Dirección de Entrega
@@ -67,7 +67,7 @@ const DetallePedido = () => {
         </div>
 
         {/* Estado del pedido */}
-        <div className="bg-white shadow-md rounded-xl p-6 mb-10">
+        <div className="bg-white shadow-md rounded-xl p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             Estado del Pedido
           </h2>
@@ -100,7 +100,7 @@ const DetallePedido = () => {
         </div>
 
         {/* Medicamentos */}
-        <div className="bg-white shadow-md rounded-xl p-6 mb-10">
+        <div className="bg-white shadow-md rounded-xl p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <Package size={20} /> Medicamentos en el Pedido
           </h2>
@@ -112,7 +112,7 @@ const DetallePedido = () => {
         </div>
 
         {/* Información del operador */}
-        <div className="bg-white shadow-md rounded-xl p-6 mb-10">
+        <div className="bg-white shadow-md rounded-xl p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <ClipboardList size={20} /> Información del Operador
           </h2>
@@ -138,13 +138,14 @@ const DetallePedido = () => {
         <div className="flex gap-4">
           <button
             onClick={() => navigate("/dashboard")}
-            className="px-5 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium transition mb-10 ml-6"
+            className="px-5 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium transition mb-10"
           >
             Volver al Panel
           </button>
           <button className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition mb-10">
             Confirmar Recepción
           </button>
+        </div>
         </div>
       </div>
     </div>

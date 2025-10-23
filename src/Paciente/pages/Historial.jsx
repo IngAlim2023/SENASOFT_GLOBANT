@@ -1,65 +1,75 @@
 import { useState, useEffect } from "react";
-import SideBar from "../components/SideBar";
 import supabase from "../../api/supabase";
 import {
-  FaMapMarkerAlt,
   FaCalendarAlt,
   FaCheckCircle,
   FaTimesCircle,
   FaClock,
   FaRoute,
+  FaMapMarkerAlt,
 } from "react-icons/fa";
+import Paginacion from "../components/Historial/Paginacion";
 
 const Historial = () => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [pedidos, setPedidos] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [usuario, setUsuario] = useState(null);
+  const [pedidos, setPedidos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("Todos");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pedidosPorPagina = 5;
 
-  // 🔑 Obtener usuario autenticado
+  // Obtener usuario autenticado
   useEffect(() => {
-    const getUsuarioActual = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error("Error al obtener usuario:", error.message);
-      } else {
-        setUsuario(data?.user || null);
+    const getUsuario = async () => {
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+        if (error) throw error;
+        setUsuario(user);
+      } catch (err) {
+        console.error("Error al obtener usuario:", err);
+        setError("No se pudo cargar el usuario.");
+        setLoading(false);
       }
     };
-    getUsuarioActual();
+    getUsuario();
   }, []);
 
-  // 🔄 Cargar pedidos filtrados según el usuario
+  // Cargar pedidos según usuario
   useEffect(() => {
     const fetchPedidos = async () => {
-      if (!usuario) return; // Esperar a que cargue el usuario
+      if (!usuario) return;
 
       setLoading(true);
       setError(null);
       try {
         const { data, error } = await supabase
           .from("pedidos")
-          .select(
-            `
-            id,
+          .select(`
+            auth_id,
+            paciente_id,
             estado,
             prioridad,
-            direccion_entrega,
             fecha_pedido,
             fecha_entrega_estimada,
-            fecha_entrega_real
-          `
-          )
-          // 👇 Filtra por paciente_id igual al ID del usuario autenticado
-          .eq("paciente_id", usuario.id)
+            fecha_entrega_real,
+            direccion_entrega,
+            pacientes!inner(
+              usuario(nombre)
+            )
+          `)
+          .eq("paciente_id", usuario.id) // UUID
           .order("fecha_pedido", { ascending: false });
 
         if (error) throw error;
-
         setPedidos(data || []);
       } catch (err) {
-        console.error("Error al cargar pedidos:", err.message);
+        console.error("Error al cargar pedidos:", err);
         setError("No se pudo cargar tu historial de pedidos.");
       } finally {
         setLoading(false);
@@ -69,11 +79,26 @@ const Historial = () => {
     fetchPedidos();
   }, [usuario]);
 
-  // 🎨 Colores e íconos según estado
+  // Filtrado y búsqueda
+  const pedidosFiltrados = pedidos.filter((p) => {
+    const coincideBusqueda =
+      p.id?.toString().toLowerCase().includes(busqueda.toLowerCase()) ||
+      p.direccion_entrega?.toLowerCase().includes(busqueda.toLowerCase());
+    const coincideEstado = filtroEstado === "Todos" || p.estado === filtroEstado;
+    return coincideBusqueda && coincideEstado;
+  });
+
+  const totalPages = Math.ceil(pedidosFiltrados.length / pedidosPorPagina);
+  const indexOfLast = currentPage * pedidosPorPagina;
+  const indexOfFirst = indexOfLast - pedidosPorPagina;
+  const pedidosActuales = pedidosFiltrados.slice(indexOfFirst, indexOfLast);
+
   const getEstadoColor = (estado) => {
-    switch (estado) {
+    switch (estado.toLowerCase()) {
       case "pendiente":
+      case "en preparación":
         return "bg-yellow-100 text-yellow-700";
+      case "en camino":
       case "en_ruta":
         return "bg-blue-100 text-blue-700";
       case "entregado":
@@ -86,11 +111,12 @@ const Historial = () => {
   };
 
   const getEstadoIcon = (estado) => {
-    switch (estado) {
+    switch (estado.toLowerCase()) {
       case "entregado":
         return <FaCheckCircle />;
       case "fallido":
         return <FaTimesCircle />;
+      case "en camino":
       case "en_ruta":
         return <FaRoute />;
       default:
@@ -98,10 +124,22 @@ const Historial = () => {
     }
   };
 
+  if (loading)
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <p className="mt-2 text-gray-600 font-medium">Cargando historial...</p>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <p className="mt-2 text-red-500 font-medium">{error}</p>
+      </div>
+    );
+
   return (
     <div className="flex">
-      <SideBar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
-
       <div
         className={`bg-gray-50 min-h-screen ${
           isExpanded ? "ml-64" : "ml-22"
@@ -109,107 +147,103 @@ const Historial = () => {
       >
         <div className="border-b border-gray-300 flex items-center justify-between bg-white p-6 rounded-2xl shadow-sm mb-6">
           <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-            <FaCalendarAlt className="text-blue-500" /> Mis Pedidos
+            <FaCalendarAlt className="text-blue-500" /> Historial de Pedidos
           </h1>
           <p className="text-sm text-gray-500">
-            Historial de pedidos asociados a tu cuenta
+            Consulta todos tus pedidos anteriores
           </p>
         </div>
 
-        {/* Estado de carga o error */}
-        {loading && (
-          <p className="text-center text-gray-600 py-6">
-            Cargando tus pedidos...
-          </p>
-        )}
-        {error && (
-          <div className="text-center text-red-600 bg-red-50 py-3 rounded-lg mb-4">
-            {error}
+        {/* Buscador y filtro */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6 w-full justify-between">
+          <div className="flex items-center border border-gray-300 rounded-xl p-2 bg-gray-50 w-full">
+            <input
+              type="text"
+              placeholder="Buscar por dirección o número de pedido..."
+              value={busqueda}
+              onChange={(e) => {
+                setBusqueda(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full bg-transparent outline-none text-gray-700"
+            />
           </div>
-        )}
+
+          <select
+            value={filtroEstado}
+            onChange={(e) => {
+              setFiltroEstado(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="border border-gray-300 rounded-xl px-4 py-2 bg-gray-50 text-gray-700 hover:bg-white cursor-pointer w-full sm:w-auto"
+          >
+            <option value="Todos">Todos</option>
+            <option value="entregado">Entregado</option>
+            <option value="fallido">Fallido</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en_ruta">En camino</option>
+          </select>
+        </div>
 
         {/* Tabla de pedidos */}
-        {!loading && !error && (
-          <div className="bg-white p-6 rounded-2xl shadow-md">
-            {pedidos.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
-                  <thead className="bg-blue-500 text-white">
-                    <tr>
-                      <th className="py-3 px-4 text-left font-semibold">#</th>
-                      <th className="py-3 px-4 text-left font-semibold">Estado</th>
-                      <th className="py-3 px-4 text-left font-semibold">Dirección</th>
-                      <th className="py-3 px-4 text-left font-semibold">
-                        Fecha del Pedido
-                      </th>
-                      <th className="py-3 px-4 text-left font-semibold">
-                        Entrega Estimada
-                      </th>
-                      <th className="py-3 px-4 text-left font-semibold">
-                        Entrega Real
-                      </th>
-                      <th className="py-3 px-4 text-left font-semibold text-center">
-                        Prioridad
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pedidos.map((pedido, index) => (
-                      <tr
-                        key={pedido.id}
-                        className="border-b border-gray-200 hover:bg-blue-50 transition-all"
-                      >
-                        <td className="py-3 px-4 text-gray-700 font-medium">
-                          {index + 1}
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold ${getEstadoColor(
-                              pedido.estado
-                            )}`}
-                          >
-                            {getEstadoIcon(pedido.estado)} {pedido.estado}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-gray-600 flex items-center gap-2">
-                          <FaMapMarkerAlt className="text-gray-400" />{" "}
-                          {pedido.direccion_entrega || "Sin dirección"}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600">
-                          {pedido.fecha_pedido
-                            ? new Date(pedido.fecha_pedido).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600">
-                          {pedido.fecha_entrega_estimada
-                            ? new Date(
-                                pedido.fecha_entrega_estimada
-                              ).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td className="py-3 px-4 text-gray-600">
-                          {pedido.fecha_entrega_real
-                            ? new Date(
-                                pedido.fecha_entrega_real
-                              ).toLocaleDateString()
-                            : "-"}
-                        </td>
-                        <td className="py-3 px-4 text-gray-700 font-semibold text-center">
-                          {pedido.prioridad}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        <div className="bg-white p-6 rounded-2xl shadow-md flex flex-col gap-4">
+          {pedidosActuales.length > 0 ? (
+            pedidosActuales.map((pedido) => (
+              <div
+                key={pedido.id}
+                className="border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between hover:shadow-md hover:bg-blue-50 cursor-pointer"
+              >
+                <div>
+                  <p className="font-semibold text-gray-800">
+                    Pedido #{pedido.id}{" "}
+                    {pedido.pacientes?.usuario?.nombre && (
+                      <span className="text-gray-500 font-normal">
+                        - {pedido.pacientes.usuario.nombre}
+                      </span>
+                    )}
+                  </p>
+                  <p
+                    className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-full ${getEstadoColor(
+                      pedido.estado
+                    )}`}
+                  >
+                    {getEstadoIcon(pedido.estado)} {pedido.estado}
+                  </p>
+                  <p className="text-gray-600 text-sm flex items-center gap-2">
+                    <FaMapMarkerAlt className="text-gray-400" />{" "}
+                    {pedido.direccion_entrega || "Sin dirección"}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Solicitado:{" "}
+                    {pedido.fecha_pedido
+                      ? new Date(pedido.fecha_pedido).toLocaleDateString()
+                      : "-"}{" "}
+                    {pedido.fecha_entrega_real && (
+                      <span>
+                        | Entregado:{" "}
+                        {new Date(pedido.fecha_entrega_real).toLocaleDateString()}
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
-            ) : (
-              <div className="text-center py-10 text-gray-600">
-                <FaTimesCircle className="text-4xl mx-auto text-gray-400 mb-3" />
-                <p>No tienes pedidos registrados todavía.</p>
-              </div>
-            )}
-          </div>
-        )}
+            ))
+          ) : (
+            <div className="text-center py-10 text-gray-600">
+              <FaTimesCircle className="text-4xl mx-auto text-gray-400 mb-3" />
+              <p>No tienes pedidos registrados todavía.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Paginación */}
+        <div className="mt-6">
+          <Paginacion
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       </div>
     </div>
   );
