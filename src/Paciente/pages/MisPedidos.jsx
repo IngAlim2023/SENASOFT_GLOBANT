@@ -10,12 +10,15 @@ import {
   FaSpinner,
 } from "react-icons/fa";
 import supabase from "../../api/supabase";
+import UseAuth from "../../context/UseAuth";
 
 const MisPedidos = () => {
   const navigate = useNavigate();
   const [nombre, setNombre] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const { userId } = UseAuth();
+  const [pacienteId, setPacienteId] = useState(0);
   // Estados para los pedidos
   const [pedidos, setPedidos] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,47 +39,65 @@ const MisPedidos = () => {
 
   // 🔹 Obtener nombre de usuario
   useEffect(() => {
-    const fetchNombreYPedidos = async () => {
+    if (!userId) return;
+
+    const loadPaciente = async () => {
       try {
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError || !user) {
-          console.error("No se encontró el usuario:", userError);
-          setLoading(false);
-          return;
-        }
-
-        // Obtener nombre
-        const { data: userData, error: nameError } = await supabase
+        const { data: usuarioData, error: usuarioError } = await supabase
           .from("usuario")
-          .select("nombre")
-          .eq("auth_id", user.id)
+          .select("id")
+          .eq("auth_id", userId)
           .single();
 
-        if (nameError) console.error("Error al obtener nombre:", nameError);
-        else setNombre(userData?.nombre || "Usuario");
+        if (usuarioError) throw usuarioError;
+        if (!usuarioData) throw new Error("Usuario no encontrado.");
 
-        // Obtener pedidos del usuario
-        const { data: pedidosData, error: pedidosError } = await supabase
-          .from("pedidos")
-          .select("*")
-          .eq("usuario_id", user.id)
-          .order("fechaEntrega", { ascending: false });
+        const { data: pacienteData, error: pacienteError } = await supabase
+          .from("pacientes")
+          .select("id")
+          .eq("usuario_id", usuarioData.id)
+          .single();
 
-        if (pedidosError) console.error("Error al obtener pedidos:", pedidosError);
-        else setPedidos(pedidosData || []);
+        if (pacienteError) throw pacienteError;
+        if (!pacienteData) throw new Error("Paciente no encontrado.");
+
+        setPacienteId(pacienteData.id);
       } catch (err) {
-        console.error("Error general al obtener datos:", err);
+        console.error("Error al obtener paciente:", err.message);
+        setError("No se pudo obtener tu información de paciente.");
+      }
+    };
+
+    loadPaciente();
+  }, [userId]);
+  useEffect(() => {
+    if (!pacienteId) return;
+
+    const loadPedidos = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("pedidos")
+          .select(
+            `
+            *
+          `
+          )
+          .eq("paciente_id", pacienteId)
+          .order("fecha_pedido", { ascending: false });
+
+        if (error) throw error;
+        setPedidos(data || []);
+      } catch (err) {
+        console.error("Error al cargar pedidos:", err.message);
+        setError("No se pudieron cargar tus pedidos.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchNombreYPedidos();
-  }, []);
+    loadPedidos();
+  }, [pacienteId]);
+  console.log(pedidos);
 
   // 🔹 Generar ruta (simulación)
   const generarRuta = async () => {
@@ -91,11 +112,17 @@ const MisPedidos = () => {
       // Simulación de resultado
       setResultadoRuta({
         success: true,
-        mensaje: "Ruta generada correctamente para los pacientes con dirección válida.",
+        mensaje:
+          "Ruta generada correctamente para los pacientes con dirección válida.",
         totalPacientes: pedidos.length,
-        pacientesConDireccion: pedidos.filter(p => p.direccion).length,
+        pacientesConDireccion: pedidos.filter((p) => p.direccion).length,
         resumenTexto: pedidos
-          .map((p, i) => `${i + 1}️⃣ ${p.medicamento || "Medicamento"} - ${p.direccion || "Sin dirección"}`)
+          .map(
+            (p, i) =>
+              `${i + 1}️⃣ ${p.medicamento || "Medicamento"} - ${
+                p.direccion || "Sin dirección"
+              }`
+          )
           .join("\n"),
         mapsUrl: "", // Aquí podrías incluir la URL del mapa si existe
       });
@@ -111,7 +138,9 @@ const MisPedidos = () => {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
         <FaSpinner className="text-4xl text-blue-600 animate-spin" />
-        <p className="mt-2 text-gray-600 font-medium">Cargando tus pedidos...</p>
+        <p className="mt-2 text-gray-600 font-medium">
+          Cargando tus pedidos...
+        </p>
       </div>
     );
 
@@ -175,10 +204,12 @@ const MisPedidos = () => {
           </div>
 
           <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-green-800 font-medium">{resultadoRuta.mensaje}</p>
+            <p className="text-green-800 font-medium">
+              {resultadoRuta.mensaje}
+            </p>
             <p className="text-sm text-green-700 mt-1">
-              📍 Pacientes en la ruta: {resultadoRuta.totalPacientes} | Con dirección válida:{" "}
-              {resultadoRuta.pacientesConDireccion}
+              📍 Pacientes en la ruta: {resultadoRuta.totalPacientes} | Con
+              dirección válida: {resultadoRuta.pacientesConDireccion}
             </p>
           </div>
 
@@ -220,7 +251,9 @@ const MisPedidos = () => {
               className="border border-gray-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between hover:shadow-md hover:bg-blue-50 transition-all cursor-pointer"
             >
               <div>
-                <p className="font-semibold text-gray-800">{pedido.medicamento}</p>
+                <p className="font-semibold text-gray-800">
+                  {pedido.medicamento}
+                </p>
                 <p className="text-sm text-gray-500">
                   Estado:{" "}
                   <span
@@ -237,7 +270,22 @@ const MisPedidos = () => {
                 </p>
               </div>
               <div className="text-sm text-gray-600 mt-2 sm:mt-0">
-                <span className="font-medium">Entrega:</span> {pedido.fechaEntrega}
+                <span className="font-medium">Entrega:</span>{" "}
+                {pedido.fecha_entrega
+                  ? pedido.fecha_entrega
+                  : "no se ha estimado"}
+              </div>
+              <div className="text-sm text-gray-600 mt-2 sm:mt-0">
+                <span className="font-medium">fecha Pedido:</span>{" "}
+                {pedido.fecha_pedido
+                  ? new Date(pedido.fecha_pedido).toLocaleString("es-ES", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Sin fecha"}
               </div>
             </div>
           ))}

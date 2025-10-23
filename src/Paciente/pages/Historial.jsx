@@ -123,7 +123,7 @@ const Historial = () => {
       <div className="bg-gray-50 min-h-screen flex-1">
         {/* Encabezado */}
         <div className="border-b border-gray-300 flex items-center justify-between p-6 bg-white shadow-sm">
-          <h1 className="text-2xl font-semibold text-gray-800">Nuevo pedido</h1>
+          <h1 className="text-2xl font-semibold text-gray-800">Historial de pedidos</h1>
         </div>
 
         {loading && (
