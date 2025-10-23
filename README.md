@@ -1,68 +1,175 @@
-💊 Sistema de Gestión Farmacéutica – SENASoft 2025
-📌 Descripción General
+# 💊 Sistema de Gestión Farmacéutica FarmaIA – SENASoft 2025
+## 📌 Descripción General
 
-Nuestro MVP es un Sistema de Gestión Farmacéutica enfocado en poblaciones vulnerables, especialmente adultos mayores y personas que requieren medicación constante para mantener una vida digna.
+El <b>Sistema de Gestión Farmacéutica</b> es un aplicativo web diseñado para optimizar la comunicación y gestión de pedidos de medicamentos entre pacientes y administradores de entidades médicas.
 
-El sistema permite a los usuarios:
+El sistema permite:
 
-🏠 Solicitar medicamentos a domicilio.
+👩‍⚕️ <b>Pacientes</b>:
 
-🚚 Monitorear en tiempo real el estado del pedido y su proceso de entrega.
+- Solicitar medicamentos a domicilio.
+- Consultar el estado y progreso de sus pedidos en tiempo real.
+- Acceder a su historial de órdenes y tratamientos.
 
-📜 Consultar el historial de órdenes y tratamientos.
+🧑‍💼 <b>Administradores</b>:
 
-Desde la visión administrativa, se pueden gestionar pacientes, registrar enfermedades y mantener el control del inventario y las entregas.
+- Gestionar información de pacientes.
+- Controlar pedidos, inventarios y entregas.
+- Administrar datos de la entidad médica mediante un panel seguro.
 
-(En versiones futuras se integrará un módulo de “repartidor” que calculará rutas óptimas mediante IA).
+## 🧩 Arquitectura del Proyecto
 
-🧩 Arquitectura del Proyecto
+El proyecto sigue una arquitectura <b>modular</b>, <b>escalable</b> y <b>basada en servicios</b>, con integración de herramientas de automatización e infraestructura en la nube.
 
-El MVP fue construido siguiendo una arquitectura modular con integración de servicios en la nube y soporte para agentes inteligentes.
+### 🧱 Frontend
 
-Frontend:
+- <b>Framework</b>: React + Vite ⚡
+- <b>Lenguaje</b>: JavaScript (JSX)
+- <b>Estilos</b>: CSS modular / TailwindCSS (en módulos específicos)
+- <b>Gestión de estados</b>: Context API
+- <b>Comunicación con backend</b>: SDK de Supabase (REST + Auth)
 
-React + Vite
+### ⚙️ Backend
 
-Componentes escritos en JSX
+- <b>Base de datos</b>: PostgreSQL
+- <b>Plataforma backend-as-a-service</b>: Supabase (API REST automática, autenticación, almacenamiento)
+- <b>Flujos automatizados</b>: n8n
 
-Estilos gestionados con TailwindCSS (en algunos módulos)
+    - Creación y actualización de pedidos.
+    - Notificaciones automáticas.
+    - Conexión con el <b>agente inteligente (MCP)</b>.
 
-Comunicación con la API mediante Supabase SDK
+### ☁️ Infraestructura y despliegue
+- <b>Render</b> → Hosting del frontend.
+- <b>Supabase</b> → Hosting del backend y base de datos.
+- <b>Docker</b> → Contenedorización y gestión del entorno de desarrollo.
+- <b>GitHub</b> → Control de versiones y colaboración.
+- <b>JIRA</b> → Documentación y gestión de incidencias.
 
-Backend / Servicios:
+## 🤖 Integración con Inteligencia Artificial (Agente MCP)
 
-Supabase como backend-as-a-service (autenticación, base de datos y API REST automática).
+El sistema incluye un <b>agente inteligente</b> integrado a través del <b>Model Context Protocol (MCP)</b> y orquestado mediante <b>n8n</b>.
 
-PostgreSQL como motor de base de datos principal.
+Este agente se comunica con Supabase y otros servicios para <b>automatizar procesos y generar información contextualizada</b> para cada usuario.
 
-n8n para la automatización de flujos (creación de pedidos, notificaciones, y conexión con el agente MCP).
+### 🧠 Funcionalidades del MCP
 
-Infraestructura:
+- Procesamiento de solicitudes provenientes de n8n.
+- Priorización inteligente de pedidos.
+- Acceso a datos de pacientes y medicamentos desde Supabase.
+- Ejecución de prompts personalizados mediante un cliente MCP local.
 
-Proyecto alojado en la nube (Supabase Hosting y despliegue de interfaz en Vercel).
+<b>Configuración técnica</b>:
 
-Control de versiones con GitHub (repositorio público para trazabilidad).
+- Cliente MCP basado en Node.js.
+- Comunicación mediante stdio.
+- Prompt principal: mcp/prompts/main.prompt.
+- Variables sensibles gestionadas en .env (no versionadas por seguridad).
 
-🤖 Integración con IA (MCP)
+## 🗂️ Estructura del Proyecto
 
-El MVP incluye un agente inteligente basado en el Model Context Protocol (MCP), el cual actúa como asistente de coordinación para las operaciones críticas del sistema.
+```
+src/
+│
+├── Admin/           # Vistas y componentes para administradores
+├── Landing/         # Página de inicio y bienvenida
+├── Paciente/        # Módulos y vistas para pacientes
+├── Protected/       # Rutas protegidas (autenticación)
+│
+├── api/             # Servicios y conexiones con Supabase
+├── assets/          # Recursos estáticos (iconos, imágenes)
+├── common/          # Componentes compartidos
+├── context/         # Context API y estados globales
+│
+├── App.jsx          # Punto de entrada principal de React
+├── main.jsx         # Configuración y renderizado raíz
+├── index.css        # Estilos globales
+└── App.css          # Estilos del componente principal
+```
 
-🧠 Funcionalidades del MCP:
+## 🚀 Instalación y Ejecución Local
+### 🧰 Requisitos previos
 
-Procesa solicitudes del flujo n8n para priorizar entregas.
+- Node.js `>= 18`
+- Docker (opcional, recomendado para entorno de desarrollo)
+- Cuenta en <b>Supabase</b>
+- Variables de entorno configuradas (`.env`)
 
-Accede a datos del paciente desde Supabase mediante un recurso MCP.
+### 🔧 1. Clonar el repositorio
 
-Ejecuta prompts calibrados en un cliente MCP local.
+```bash
+git clone https://github.com/<usuario>/<repositorio>.git
+cd <repositorio>
+```
 
-Sugiere acciones automáticas al administrador (por ejemplo, confirmar pedidos o recomendar ajustes de stock).
+### 📦 2. Instalar dependencias
 
-🧩 Configuración:
+```bash
+npm install
+```
 
-Cliente MCP integrado con entorno n8n y Node.js.
+### ⚙️ 3. Configurar variables de entorno
 
-Comunicación mediante transporte stdio.
+Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
 
-Prompt base definido en mcp/prompts/main.prompt.
+```bash
+VITE_SUPABASE_URL=https://xxxx.supabase.co
+VITE_SUPABASE_KEY=public-anon-key
+VITE_API_URL=http://localhost:3000
+```
 
-(Las claves API y archivos .env fueron excluidos del control de versiones para garantizar seguridad, conforme a los lineamientos de SENASoft).
+### 🐳 4. (Opcional) Ejecutar con Docker
+
+```bash
+docker build -t gestion-farmaceutica .
+docker run -p 5173:5173 gestion-farmaceutica
+```
+
+### 🖥️ 5. Iniciar el entorno de desarrollo
+
+```bash
+npm run dev
+```
+
+La aplicación estará disponible en http://localhost:5173
+
+## 🧩 Despliegue en Producción
+
+El despliegue está automatizado mediante <b>Render</b>.
+
+Los pasos generales para un nuevo despliegue son:
+
+1. Conectar el repositorio de GitHub a Render.
+2. Configurar variables de entorno desde el panel de Render.
+3. Render detectará el `vite.config.js` y ejecutará el build automáticamente.
+4. Verifica el estado del servicio desde el panel.
+
+## 🧾 Documentación y Gestión de Proyecto
+
+| Herramienta         | Uso                                                                 |
+|----------------------|---------------------------------------------------------------------|
+| **GitHub**           | Control de versiones, *pull requests*, CI/CD                        |
+| **JIRA**             | Documentación de requerimientos, seguimiento y *sprints*           |
+| **Supabase Studio**  | Visualización y gestión de base de datos                            |
+| **n8n Dashboard**    | Automatización de flujos y agentes                                  |
+| **Render Dashboard** | Despliegue y monitoreo de frontend                                  |
+
+
+## 👥 Colaboradores y Créditos
+
+Proyecto desarrollado en el marco de <b>SENASoft 2025</b> por el equipo <b>PowerLead</b>.
+Se priorizó la creación de soluciones inclusivas y accesibles para poblaciones vulnerables.
+
+
+🧠 Futuras Mejoras
+
+- Implementación de módulo de repartidores con cálculo de rutas óptimas mediante IA.
+- Dashboard analítico para métricas médicas.
+- Sistema de notificaciones push y alertas de medicación.
+- Integración con sistemas de facturación y prescripción electrónica.
+
+## 🤖 PowerLead - Equipo
+El equipo esta conformado por tres (3) integrantes desarrolladores de <b>FarmaIA</b>:
+- Lisseth Monsalve
+- Jorge Porras
+- Andrés Cabrales

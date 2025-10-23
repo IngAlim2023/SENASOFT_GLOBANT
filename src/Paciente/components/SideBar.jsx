@@ -6,6 +6,7 @@ import UseAuth from "../../context/UseAuth";
 import { LuPill } from "react-icons/lu";
 import { BiHomeAlt } from "react-icons/bi";
 import { useRef, useEffect } from "react";
+import { FaHistory } from "react-icons/fa";
 
 const SideBar = ({ isExpanded, setIsExpanded }) => {
   const navigate = useNavigate();
@@ -94,7 +95,7 @@ const SideBar = ({ isExpanded, setIsExpanded }) => {
             }`
           }
         >
-          <BiHomeAlt className="text-2xl flex-shrink-0 w-6 h-6" />
+          <FaHistory className="text-2xl flex-shrink-0 w-6 h-6" />
           {isExpanded && <span>Historial</span>}
         </NavLink>
       </nav>
