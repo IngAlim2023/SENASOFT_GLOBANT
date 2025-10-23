@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
-import { supabase } from "../supabaseClient";
+import supabase from "../../api/supabase";
 import {
   FaMapMarkerAlt,
   FaCalendarAlt,
@@ -9,39 +9,63 @@ import {
   FaClock,
   FaRoute,
 } from "react-icons/fa";
+import UseAuth from "../../context/UseAuth";
 
 const Historial = () => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [usuario, setUsuario] = useState(null);
+  const [pacienteId, setPacienteId] = useState(null);
 
-  // 🔑 Obtener usuario autenticado
+  // 🔑 Usuario autenticado desde tu contexto
+  const { userId } = UseAuth();
+
+  // 1️⃣ Buscar paciente según el userId del auth
   useEffect(() => {
-    const getUsuarioActual = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error("Error al obtener usuario:", error.message);
-      } else {
-        setUsuario(data?.user || null);
+    if (!userId) return;
+
+    const loadPaciente = async () => {
+      try {
+        const { data: usuarioData, error: usuarioError } = await supabase
+          .from("usuario")
+          .select("id")
+          .eq("auth_id", userId)
+          .single();
+
+        if (usuarioError) throw usuarioError;
+        if (!usuarioData) throw new Error("Usuario no encontrado.");
+
+        const { data: pacienteData, error: pacienteError } = await supabase
+          .from("pacientes")
+          .select("id")
+          .eq("usuario_id", usuarioData.id)
+          .single();
+
+        if (pacienteError) throw pacienteError;
+        if (!pacienteData) throw new Error("Paciente no encontrado.");
+
+        setPacienteId(pacienteData.id);
+      } catch (err) {
+        console.error("Error al obtener paciente:", err.message);
+        setError("No se pudo obtener tu información de paciente.");
       }
     };
-    getUsuarioActual();
-  }, []);
 
-  // 🔄 Cargar pedidos filtrados según el usuario
+    loadPaciente();
+  }, [userId]);
+
+  // 2️⃣ Cargar pedidos del paciente
   useEffect(() => {
-    const fetchPedidos = async () => {
-      if (!usuario) return; // Esperar a que cargue el usuario
+    if (!pacienteId) return;
 
+    const loadPedidos = async () => {
       setLoading(true);
       setError(null);
       try {
         const { data, error } = await supabase
           .from("pedidos")
-          .select(
-            `
+          .select(`
             id,
             estado,
             prioridad,
@@ -49,27 +73,24 @@ const Historial = () => {
             fecha_pedido,
             fecha_entrega_estimada,
             fecha_entrega_real
-          `
-          )
-          // 👇 Filtra por paciente_id igual al ID del usuario autenticado
-          .eq("paciente_id", usuario.id)
+          `)
+          .eq("paciente_id", pacienteId)
           .order("fecha_pedido", { ascending: false });
 
         if (error) throw error;
-
         setPedidos(data || []);
       } catch (err) {
         console.error("Error al cargar pedidos:", err.message);
-        setError("No se pudo cargar tu historial de pedidos.");
+        setError("No se pudieron cargar tus pedidos.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPedidos();
-  }, [usuario]);
+    loadPedidos();
+  }, [pacienteId]);
 
-  // 🎨 Colores e íconos según estado
+  // 🎨 Utilidades visuales
   const getEstadoColor = (estado) => {
     switch (estado) {
       case "pendiente":
@@ -98,10 +119,10 @@ const Historial = () => {
     }
   };
 
+  // 🧱 Renderizado principal
   return (
     <div className="flex">
       <SideBar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
-
       <div
         className={`bg-gray-50 min-h-screen ${
           isExpanded ? "ml-64" : "ml-22"
@@ -116,19 +137,18 @@ const Historial = () => {
           </p>
         </div>
 
-        {/* Estado de carga o error */}
         {loading && (
           <p className="text-center text-gray-600 py-6">
             Cargando tus pedidos...
           </p>
         )}
+
         {error && (
           <div className="text-center text-red-600 bg-red-50 py-3 rounded-lg mb-4">
             {error}
           </div>
         )}
 
-        {/* Tabla de pedidos */}
         {!loading && !error && (
           <div className="bg-white p-6 rounded-2xl shadow-md">
             {pedidos.length > 0 ? (
@@ -139,18 +159,10 @@ const Historial = () => {
                       <th className="py-3 px-4 text-left font-semibold">#</th>
                       <th className="py-3 px-4 text-left font-semibold">Estado</th>
                       <th className="py-3 px-4 text-left font-semibold">Dirección</th>
-                      <th className="py-3 px-4 text-left font-semibold">
-                        Fecha del Pedido
-                      </th>
-                      <th className="py-3 px-4 text-left font-semibold">
-                        Entrega Estimada
-                      </th>
-                      <th className="py-3 px-4 text-left font-semibold">
-                        Entrega Real
-                      </th>
-                      <th className="py-3 px-4 text-left font-semibold text-center">
-                        Prioridad
-                      </th>
+                      <th className="py-3 px-4 text-left font-semibold">Fecha del Pedido</th>
+                      <th className="py-3 px-4 text-left font-semibold">Entrega Estimada</th>
+                      <th className="py-3 px-4 text-left font-semibold">Entrega Real</th>
+                      <th className="py-3 px-4 text-left font-semibold text-center">Prioridad</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -159,14 +171,10 @@ const Historial = () => {
                         key={pedido.id}
                         className="border-b border-gray-200 hover:bg-blue-50 transition-all"
                       >
-                        <td className="py-3 px-4 text-gray-700 font-medium">
-                          {index + 1}
-                        </td>
+                        <td className="py-3 px-4 text-gray-700 font-medium">{index + 1}</td>
                         <td className="py-3 px-4">
                           <span
-                            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold ${getEstadoColor(
-                              pedido.estado
-                            )}`}
+                            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold ${getEstadoColor(pedido.estado)}`}
                           >
                             {getEstadoIcon(pedido.estado)} {pedido.estado}
                           </span>
@@ -182,16 +190,12 @@ const Historial = () => {
                         </td>
                         <td className="py-3 px-4 text-gray-600">
                           {pedido.fecha_entrega_estimada
-                            ? new Date(
-                                pedido.fecha_entrega_estimada
-                              ).toLocaleDateString()
+                            ? new Date(pedido.fecha_entrega_estimada).toLocaleDateString()
                             : "-"}
                         </td>
                         <td className="py-3 px-4 text-gray-600">
                           {pedido.fecha_entrega_real
-                            ? new Date(
-                                pedido.fecha_entrega_real
-                              ).toLocaleDateString()
+                            ? new Date(pedido.fecha_entrega_real).toLocaleDateString()
                             : "-"}
                         </td>
                         <td className="py-3 px-4 text-gray-700 font-semibold text-center">
