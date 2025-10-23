@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
-import { supabase } from "../supabaseClient";
+import supabase from "../../api/supabase";
 import {
   FaMapMarkerAlt,
   FaCalendarAlt,
